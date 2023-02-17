@@ -14,12 +14,15 @@ public class TrainingGroundTests {
     String expectedName = "Henrique C. G. Baptista";
 
     private WebDriver driver;
+    private DSL dsl;
+
 
     @Before
     public void inicialize (){
         System.setProperty("webdriver.chrome.driver", driverPath);
         driver = new ChromeDriver();
         driver.get("file:///" + System.getProperty("user.dir")+"/src/main/resources/componentes.html");
+        dsl= new DSL(driver);
     }
 
     @After
@@ -36,64 +39,41 @@ public class TrainingGroundTests {
 
 // Testando e validando texto escrito //
     @Test
-    public void interactingTextField(){
-        driver.findElement(By.id("elementosForm:nome")).sendKeys("Henrique C. G. Baptista");
-        String actualName = driver.findElement(By.id("elementosForm:nome")).getAttribute("value");
-
-        Assert.assertEquals(expectedName,actualName);
+    public void interactingTextField() {
+        dsl.writing("elementosForm:nome", "Henrique C. G. Baptista");
+        Assert.assertEquals(expectedName, dsl.getFieldValue("elementosForm:nome"));
     }
 
 // Testando Text area, a diferença é que eu posso escrever várias linhas
     @Test
     public void interactingTextArea(){
-        driver.findElement(By.id("elementosForm:sugestoes")).sendKeys(toBeWrittenInTextArea);
-        String assertWritingInTextArea =  driver.findElement(By.id("elementosForm:sugestoes")).getAttribute("value");
-        Assert.assertEquals(toBeWrittenInTextArea,assertWritingInTextArea);
+        dsl.writing("elementosForm:sugestoes", "\"\\n Henrique\\nC.\\nG.\\nBaptista\"");
+        Assert.assertEquals("\"\\n Henrique\\nC.\\nG.\\nBaptista\"",dsl.getFieldValue("elementosForm:sugestoes"));
+
     }
     @Test
     public void interactingRadioButton (){
-        driver.findElement(By.id("ElementosForm:sexo:0")).click();
-        Boolean assert_If_RadioBox_Is_Selected = driver.findElement(By.id("ElementosForm:sexo:0")).isSelected();
-
-        Assert.assertTrue(assert_If_RadioBox_Is_Selected);
+        dsl.clicckOnRadioButton("ElementosForm:sexo:0");
+        Assert.assertTrue(dsl.radioButtonIsMarked("ElementosForm:sexo:0"));
     }
     @Test
     public void interactingCheckBox (){
-        driver.findElement(By.id("ElementosForm:comidaFavorita:1")).click();
-        Boolean assert_If_RadioBox_Is_Selected = driver.findElement(By.id("ElementosForm:comidaFavorita:1")).isSelected();
-
-        Assert.assertTrue(assert_If_RadioBox_Is_Selected);
+        dsl.clicckOnRadioButton("ElementosForm:comidaFavorita:1");
+        Assert.assertTrue(dsl.radioButtonIsMarked("ElementosForm:comidaFavorita:1"));
     }
     @Test
     public void interactingCombo (){
-        WebElement element = driver.findElement(By.id("ElementosForm:escolaridade"));
-        Select combo = new Select (element);
-        List<WebElement> options = combo.getOptions();
-        Assert.assertEquals(8,options.size());
-
-        //combo.selectByIndex(3);
-        //combo.selectByValue("superior");
-        /* Terceira opção de encontrar o combo + Verificação simples
-        combo.selectByVisibleText("2o grau incompleto");
-       Assert.assertEquals("2o grau incompleto",combo.getFirstSelectedOption().getText());*/
-
-        Boolean encontrou = false;
-        for (WebElement option : options){
-            if(option.getText().equals("Mestrado")){
-
-                encontrou = true;
-                break;
-            }
-        }
-        Assert.assertTrue(encontrou);
+        dsl.selectCombo("elementosForm:escolaridade","2o grau incompleto");
+        Assert.assertEquals("2o grau incompleto",dsl.getComboValue("elementosForm:escolaridade"));
     }
     @Test
     public void interactingMultipleChoisesCombo(){
+        dsl.selectCombo("elementosForm:esportes","Natacao");
+        dsl.selectCombo("elementosForm:esportes","Corrida");
+        dsl.selectCombo("elementosForm:esportes","O que eh esporte?");
+
         WebElement element = driver.findElement(By.id("elementosForm:esportes"));
         Select combo = new Select (element);
-        combo.selectByVisibleText("Natacao");
-        combo.selectByVisibleText("Corrida");
-        combo.selectByVisibleText("O que eh esporte?");
 
         //Selecionando 3 opções em uma lista com Scrollbar
         List<WebElement> allSelectedOptions = combo.getAllSelectedOptions();
@@ -104,32 +84,25 @@ public class TrainingGroundTests {
     }
     @Test
     public void interactingButtons () {
-        String expectedResultAfterclickOnButton = "Obrigado!";
-        WebElement buttonClick = driver.findElement(By.id("buttonSimple"));
-        buttonClick.click();
-
-        String actualButtonText= buttonClick.getAttribute("value");
-        Assert.assertEquals(expectedResultAfterclickOnButton,actualButtonText );
+        dsl.clickOnButton("buttonSimple");
+        Assert.assertEquals("Obrigado!",dsl.getButtonValue("buttonSimple"));
     }
-
     @Test
     public void interactingLinks (){
-        driver.findElement(By.linkText("Voltar")).click();
-
-        String textAfterClickOnLinkText = driver.findElement(By.id("resultado")).getText();
-
-    Assert.assertEquals("Voltou!", textAfterClickOnLinkText );
+        dsl.clickOnLink("Voltar");
+    Assert.assertEquals("Voltou!", dsl.getText("resultado"));
     }
     @Test
     public  void seachingTextsOnPage(){
-        /*   Para buscar o todos os textos da página e verficiar se contém o valor "Campo de Treinamento".
+        /* Para buscar o todos os textos da página e verficiar se contém o valor "Campo de Treinamento".
         Assert.assertTrue(driver.findElement(By.tagName("body")).getText().contains("Campo de Treinamento"));   */
 
-         /*  Para buscar o primeiro elemento de uma tag de uma página.
-         Assert.assertEquals("Campo de Treinamento",driver.findElement(By.tagName("h3")).getText());*/
+         //  Para buscar o primeiro elemento de uma tag de uma página.
+         Assert.assertEquals("Campo de Treinamento",dsl.getText(By.tagName("h3")));
+
 
          // Para buscar uma elemento pelo nome da classe, ou seja, algo único que o referêncie na página.
-        Assert.assertEquals("Cuidado onde clica, muitas armadilhas...",driver.findElement(By.className("facilAchar")).getText());
+        Assert.assertEquals("Cuidado onde clica, muitas armadilhas...",dsl.getText(By.className("facilAchar")));
     }
 
 }

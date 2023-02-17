@@ -15,12 +15,15 @@ import java.util.List;
 public class SignInTest {
     String driverPath = "C:\\Users\\calaz\\chromedriver.exe";
     private WebDriver driver;
+    private DSL dsl;
+
 
     @Before
     public void inicialize (){
         System.setProperty("webdriver.chrome.driver", driverPath);
         driver = new ChromeDriver();
         driver.get("file:///" + System.getProperty("user.dir")+"/src/main/resources/componentes.html");
+        dsl = new DSL(driver);
     }
     @After
     public void killingDriver (){
@@ -29,21 +32,21 @@ public class SignInTest {
 
     @Test
     public void fillingFullForms (){
+        dsl.writing("elementosForm:nome","Henrique");
+        dsl.writing("elementosForm:sobrenome","Calazans");
+        dsl.clicckOnRadioButton("elementosForm:sexo:0");
+        dsl.clickOnButton("elementosForm:comidaFavorita:1");
+        dsl.selectCombo("ElementosForm:escolaridade","Superior");
+        dsl.selectCombo("ElementosForm:esportes","Futebol");
+        dsl.clickOnButton("elementosForm:cadastrar");
 
-        driver.findElement(By.id("elementosForm:nome")).sendKeys("Henrique");
-        driver.findElement(By.id("elementosForm:sobrenome")).sendKeys("Calazans");
-        driver.findElement(By.id("elementosForm:sexo:0")).click();
-        driver.findElement(By.id("elementosForm:comidaFavorita:1")).click();
-        new Select(driver.findElement(By.id("ElementosForm:escolaridade"))).selectByVisibleText("Superior");
-        new Select(driver.findElement(By.id("ElementosForm:esportes"))).selectByVisibleText("Futebol");
-        driver.findElement(By.id("elementosForm:cadastrar")).click();
 
-        Assert.assertTrue(driver.findElement(By.id("resultado")).getText().startsWith("Cadastrado!"));
-        Assert.assertTrue(driver.findElement(By.id("descNome")).getText().endsWith("Henrique"));
-        Assert.assertEquals("Sobrenome: Calazans",driver.findElement(By.id("descSobrenome")).getText());
-        Assert.assertEquals("Sexo: Masculino",driver.findElement(By.id("descSexo")).getText());
-        Assert.assertEquals("Comida: Frango",driver.findElement(By.id("descComida")).getText());
-        Assert.assertEquals("Escolaridade: superior",driver.findElement(By.id("descEscolaridade")).getText());
-        Assert.assertEquals("Sugestoes:",driver.findElement(By.id("descSugestoes")).getText());
+        Assert.assertTrue(dsl.getText("resultado").startsWith("Cadastrado!"));
+        Assert.assertTrue(dsl.getText("descNome").endsWith("Henrique"));
+        Assert.assertEquals("Sobrenome: Calazans",dsl.getText("descSobrenome"));
+        Assert.assertEquals("Sexo: Masculino",dsl.getText("descSexo"));
+        Assert.assertEquals("Comida: Frango",dsl.getText("descComida"));
+        Assert.assertEquals("Escolaridade: superior",dsl.getText("descEscolaridade"));
+        Assert.assertEquals("Sugestoes:",dsl.getText("descSugestoes"));
     }
 }
